@@ -1,0 +1,33 @@
+ 
+ require": {
+        "php": "^7.3|^8.0",
+        "cybersource/rest-client-php": "0.0.38"
+}
+ 
+ function SimpleAuthorizationInternet(Request $request)
+        {
+                try {
+                        $merchantConfig = new \CyberSource\Authentication\Core\MerchantConfiguration();
+                        $merchantConfig->setAuthenticationType(strtoupper(trim('http_signature')));
+                        $merchantConfig->setMerchantID(trim(env('MERCHANT_ID')));
+                        $merchantConfig->setApiKeyID(env('MERCHANT_KEY_ID'));
+                        $merchantConfig->setSecretKey(env('MERCHANT_SECRET_KEY'));
+                        $merchantConfig->setRunEnvironment('apitest.cybersource.com');
+
+
+                        $requestObj = new \CyberSource\Model\CreatePaymentRequest($request->toArray());
+
+                        $api_client = new \CyberSource\ApiClient(null, $merchantConfig);
+                        $api_instance = new \CyberSource\Api\PaymentsApi($api_client);
+                        $apiResponse = $api_instance->createPayment($requestObj);
+
+                        // print_r($apiResponse);
+
+                        return $apiResponse[0];
+                } catch (\Cybersource\ApiException $e) {
+                        return response()->json([
+                                'status' => 'error',
+                                'message' => $e->getMessage(),
+                        ], 400);
+                }
+        }
